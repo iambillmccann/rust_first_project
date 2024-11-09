@@ -1,10 +1,21 @@
-use std::fs::File;
+// use std::fs::File;
 
+fn divide(a: i32, b: i32) -> Result<i32, &'static str> {
+    if b == 0 {
+        return Err("Cannot divide by zero");
+    }
+    Ok(a / b)
+}
 fn main() {
-    let file_result = File::open("nonexistent.txt");
+    let result1 = divide(10, 2);
+    match result1 {
+        Ok(value) => println!("Result1: {}", value),
+        Err(err) => println!("Error1: {}", err),
+    }
 
-    match file_result {
-        Ok(file) => println!("File opened successfully: {:?}", file),
-        Err(error) => println!("Failed to open file: {:?}", error),
+    let result2 = divide(10, 0);
+    match result2 {
+        Ok(value) => println!("Result2: {}", value),
+        Err(err) => println!("Error2: {}", err),
     }
 }
