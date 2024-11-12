@@ -1,15 +1,37 @@
 use std::fs::File;
 use std::io::{self, Read};
+use std::num::ParseIntError;
 
 fn read_file_contents(path: &str) -> Result<String, io::Error> {
-    let mut file = File::open(path)?;
+    let mut file = match File::open(path) {
+        Ok(file) => file,
+        Err(err) => return Err(err),
+    };
+
     let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
+    let _ = match file.read_to_string(&mut contents) {
+        Ok(_) => Ok::<String, io::Error>(contents.clone()),
+        Err(e) => return Err(e),
+    };
+
     Ok(contents)
 }
+
+fn parse_int(value: &str) -> Result<i32, ParseIntError> {
+    match value.parse::<i32>() {
+        Ok(n) => Ok(n),
+        Err(err) => Err(err),
+    }
+}
+
 fn main() {
-    match read_file_contents("./src/main.txt") {
-        Ok(contents) => println!("{}", contents),
+    // match read_file_contents("./src/dummy.txt") {
+    //     Ok(contents) => println!("{}", contents),
+    //     Err(err) => println!("Error: {}", err),
+    // }
+
+    match parse_int("a") {
+        Ok(n) => println!("Number: {}", n),
         Err(err) => println!("Error: {}", err),
     }
 }
