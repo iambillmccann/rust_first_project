@@ -1,21 +1,15 @@
-// use std::fs::File;
+use std::fs::File;
+use std::io::{self, Read};
 
-fn divide(a: i32, b: i32) -> Result<i32, &'static str> {
-    if b == 0 {
-        return Err("Cannot divide by zero");
-    }
-    Ok(a / b)
+fn read_file_contents(path: &str) -> Result<String, io::Error> {
+    let mut file = File::open(path)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    Ok(contents)
 }
 fn main() {
-    let result1 = divide(10, 2);
-    match result1 {
-        Ok(value) => println!("Result1: {}", value),
-        Err(err) => println!("Error1: {}", err),
-    }
-
-    let result2 = divide(10, 0);
-    match result2 {
-        Ok(value) => println!("Result2: {}", value),
-        Err(err) => println!("Error2: {}", err),
+    match read_file_contents("./src/main.txt") {
+        Ok(contents) => println!("{}", contents),
+        Err(err) => println!("Error: {}", err),
     }
 }
