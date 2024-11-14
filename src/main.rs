@@ -1,37 +1,49 @@
+use std::fmt;
 use std::fs::File;
 use std::io::{self, Read};
-use std::num::ParseIntError;
 
-fn read_file_contents(path: &str) -> Result<String, io::Error> {
-    let mut file = match File::open(path) {
-        Ok(file) => file,
-        Err(err) => return Err(err),
-    };
-
-    let mut contents = String::new();
-    let _ = match file.read_to_string(&mut contents) {
-        Ok(_) => Ok::<String, io::Error>(contents.clone()),
-        Err(e) => return Err(e),
-    };
-
-    Ok(contents)
+// Define a custom error type
+#[derive(Debug)]
+enum MyError {
+    Io(io::Error),
+    Parse(std::num::ParseIntError),
 }
 
-fn parse_int(value: &str) -> Result<i32, ParseIntError> {
-    match value.parse::<i32>() {
-        Ok(n) => Ok(n),
-        Err(err) => Err(err),
+// Implement `From` trait to convert `io::Error` and `ParseIntError` into `MyError`
+impl From<io::Error> for MyError {
+    fn from(error: io::Error) -> Self {
+        MyError::Io(error)
     }
 }
 
-fn main() {
-    // match read_file_contents("./src/dummy.txt") {
-    //     Ok(contents) => println!("{}", contents),
-    //     Err(err) => println!("Error: {}", err),
-    // }
+impl From<std::num::ParseIntError> for MyError {
+    fn from(error: std::num::ParseIntError) -> Self {
+        MyError::Parse(error)
+    }
+}
 
-    match parse_int("a") {
-        Ok(n) => println!("Number: {}", n),
-        Err(err) => println!("Error: {}", err),
+// Implement `Display` for `MyError`
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            MyError::Io(err) => write!(f, "IO error: {}", err),
+            MyError::Parse(err) => write!(f, "Parse error: {}", err),
+        }
+    }
+}
+
+// A function that may return an error
+fn read_and_parse_file(path: &str) -> Result<i32, MyError> {
+    let mut file = File::open(path)?; // `?` propagates `io::Error` as `MyError`
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    let number: i32 = contents.trim().parse()?; // `?` propagates `ParseIntError` as `MyError`
+    Ok(number)
+}
+
+fn main() {
+    match read_and_parse_file("numbers.txt") {
+        Ok(number) => println!("The number is: {}", number),
+        Err(e) => println!("An error occurred: {}", e),
     }
 }
